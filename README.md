@@ -203,6 +203,110 @@ Expected Output:
 
 ---
 
+## 🔍 What is happening?
+
+You ran:
+
+```bash
+az aks create \
+  --resource-group aks-rg \
+  --name aks-demo-cluster \
+  --node-count 2 \
+  --node-vm-size Standard_DS2_v2 \
+  --enable-managed-identity \
+  --generate-ssh-keys
+```
+
+Azure CLI responded with:
+
+> *The behavior of this command has been altered by the following extension: aks-preview*
+> *The new node pool will enable SSH access, recommended to use '--ssh-access disabled' option to disable SSH access for the node pool to make it more secure.*
+
+### ✅ Meaning
+
+* You have **`aks-preview` extension installed**
+* AKS **node pool SSH access is enabled by default**
+* Azure **recommends disabling SSH** for better security (production best practice)
+
+---
+
+## 🔐 Recommended (Secure) Command – Disable SSH Access
+
+### ✅ **Production-Ready AKS Create Command**
+
+```bash
+az aks create \
+  --resource-group aks-rg \
+  --name aks-demo-cluster \
+  --node-count 2 \
+  --node-vm-size Standard_DS2_v2 \
+  --enable-managed-identity \
+  --ssh-access disabled \
+  --generate-ssh-keys
+```
+
+✔ SSH disabled on worker nodes
+✔ Access only via `kubectl`
+✔ Aligns with **Zero Trust & Enterprise Security**
+
+---
+
+## 🧠 When SHOULD SSH be enabled?
+
+| Scenario                | SSH Needed?  |
+| ----------------------- | ------------ |
+| Production cluster      | ❌ No         |
+| Dev / Training labs     | ⚠️ Optional  |
+| Node-level debugging    | ⚠️ Temporary |
+| Compliance environments | ❌ No         |
+
+👉 **Best practice**: Keep SSH disabled and use:
+
+* `kubectl exec`
+* `kubectl logs`
+* Azure Monitor / Container Insights
+
+---
+
+## 🔎 Check if `aks-preview` Extension is Installed
+
+```bash
+az extension list --output table
+```
+
+If you see:
+
+```
+aks-preview
+```
+
+That explains the behavior change.
+
+---
+
+## 🧹 Optional: Remove aks-preview (If Not Needed)
+
+> ⚠️ Remove only if you are not using preview AKS features
+
+```bash
+az extension remove --name aks-preview
+```
+
+Then re-run the normal command.
+
+---
+
+## 🛡️ Enterprise AKS Security Recommendations
+
+* ✅ Disable SSH access
+* ✅ Use Managed Identity
+* ✅ Enable Azure AD + RBAC
+* ✅ Restrict API server IP ranges
+* ✅ Enable Defender for Containers
+* ✅ Use Private AKS (for production)
+
+---
+
 ## 🧹 Cleanup (Avoid Extra Costs)
 
 ```bash
