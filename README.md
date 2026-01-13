@@ -141,7 +141,7 @@ az group create \
 ```bash
 az aks create \
   --resource-group aks \
-  --name aks-demo-cluster \
+  --name mycluster \
   --node-count 2 \
   --node-vm-size Standard_DS2_v2 \
   --enable-managed-identity \
@@ -156,8 +156,8 @@ az aks create \
 
 ```bash
 az aks get-credentials \
-  --resource-group aks-rg \
-  --name aks-demo-cluster
+  --resource-group aks \
+  --name mycluster
 ```
 
 Verify:
