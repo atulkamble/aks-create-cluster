@@ -130,7 +130,7 @@ aks-create-cluster/
 
 ```bash
 az group create \
-  --name aks-rg \
+  --name aks \
   --location eastus
 ```
 
@@ -140,7 +140,7 @@ az group create \
 
 ```bash
 az aks create \
-  --resource-group aks-rg \
+  --resource-group aks \
   --name aks-demo-cluster \
   --node-count 2 \
   --node-vm-size Standard_DS2_v2 \
