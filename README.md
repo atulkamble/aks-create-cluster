@@ -1,163 +1,284 @@
-<div align="center">
-<h1>🚀 AKS Create Cluster</h1>
-<p><strong>Built with ❤️ by <a href="https://github.com/atulkamble">Atul Kamble</a></strong></p>
-
-<p>
-<a href="https://codespaces.new/atulkamble/template.git">
-<img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" />
-</a>
-<a href="https://vscode.dev/github/atulkamble/template">
-<img src="https://img.shields.io/badge/Open%20with-VS%20Code-007ACC?logo=visualstudiocode&style=for-the-badge" alt="Open with VS Code" />
-</a>
-<a href="https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/atulkamble/template">
-<img src="https://img.shields.io/badge/Dev%20Containers-Ready-blue?logo=docker&style=for-the-badge" />
-</a>
-<a href="https://desktop.github.com/">
-<img src="https://img.shields.io/badge/GitHub-Desktop-6f42c1?logo=github&style=for-the-badge" />
-</a>
-</p>
-
-<p>
-<a href="https://github.com/atulkamble">
-<img src="https://img.shields.io/badge/GitHub-atulkamble-181717?logo=github&style=flat-square" />
-</a>
-<a href="https://www.linkedin.com/in/atuljkamble/">
-<img src="https://img.shields.io/badge/LinkedIn-atuljkamble-0A66C2?logo=linkedin&style=flat-square" />
-</a>
-<a href="https://x.com/atul_kamble">
-<img src="https://img.shields.io/badge/X-@atul_kamble-000000?logo=x&style=flat-square" />
-</a>
-</p>
-
-<strong>Version 1.0.0</strong> | <strong>Last Updated:</strong> January 2026
-</div>
+Great content already 👍
+Below is a **clean, production-aligned UPDATE** where I’ve **added the required fields**, **explicit flags**, and **best-practice notes**, while **keeping your structure and commands familiar**.
+You can paste this directly as a **final README version**.
 
 ---
 
-# 🚀 AKS Create Cluster
+# ☁️ Azure Container Registry (ACR) — Setup & Push Docker Image
 
-**Create and manage an Azure Kubernetes Service (AKS) cluster using Azure CLI**
-Designed for **DevOps engineers, cloud architects, and learners**.
-
----
-
-![Image](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-microservices/images/microservices-architecture.svg)
-
-![Image](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/images/tls-termination.svg)
-
-![Image](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/aks-dualstack/images/dual-stack-inline.png)
-
-![Image](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/aks/media/network-private-cluster.png)
-
-## 📌 Overview
-
-This repository provides **step-by-step instructions** to create an **AKS (Azure Kubernetes Service) cluster** using **Azure CLI**, including:
-
-* Resource Group creation
-* AKS Cluster provisioning
-* Node pool configuration
-* `kubectl` access
-* Cluster validation
-* Basic post-deployment checks
-
-✅ Ideal for **POCs**, **training labs**, and **production-ready foundations**
+**(With Required Fields & Production Notes)**
 
 ---
 
-## 🏗️ Architecture
+## 🧭 Overview
 
-**High-level AKS Architecture**
-
-```
-Azure Subscription
-│
-├── Resource Group
-│   ├── AKS Cluster
-│   │   ├── Control Plane (Managed by Azure)
-│   │   ├── System Node Pool
-│   │   └── User Node Pool
-│   │
-│   ├── Virtual Network (VNet)
-│   ├── Subnets
-│   └── Load Balancer
-│
-└── Azure Container Registry (Optional)
-```
+This guide walks you through **creating an Azure Container Registry (ACR)**, logging in from an **Azure VM**, and **building + pushing a Docker image** to ACR.
+It also aligns with **AKS consumption requirements** (private registry, proper naming, permissions).
 
 ---
 
-## 🔧 Prerequisites
+## ⚙️ Prerequisites (Required)
 
-Ensure the following are installed and configured:
+| Requirement                | Mandatory      |
+| -------------------------- | -------------- |
+| Azure Subscription         | ✅ Yes          |
+| Azure CLI (`az`)           | ✅ Yes          |
+| Docker Engine              | ✅ Yes          |
+| Git                        | ✅ Yes          |
+| Azure VM (Linux)           | ⚠️ Recommended |
+| A Dockerfile-based project | ✅ Yes          |
 
-* ✅ Azure Subscription
-* ✅ Azure CLI (`az`)
-* ✅ kubectl
-* ✅ Valid Azure login
+---
 
-### Install Azure CLI
+## 🏗️ Step 1 — Create Azure Container Registry (ACR)
+
+### Required Fields (Portal / CLI)
+
+| Field          | Required    | Example          |
+| -------------- | ----------- | ---------------- |
+| Registry name  | ✅ Yes       | `atulkamble`     |
+| Resource group | ✅ Yes       | `devops`         |
+| Location       | ✅ Yes       | `eastus`         |
+| SKU            | ✅ Yes       | `Basic`          |
+| Admin user     | ⚠️ Optional | Enabled for labs |
+
+> 🔐 **Production note**: Admin user is acceptable for labs.
+> In production, use **Managed Identity (AKS → ACR attach)** instead.
+
+### Portal Steps
+
+1. Azure Portal → **Container Registries**
+2. Click **Create**
+3. Fill:
+
+   * **Registry name:** `atulkamble`
+   * **Resource group:** `devops`
+   * **Region:** `East US`
+   * **SKU:** `Basic`
+   * **Admin user:** Enable
+4. **Review + Create**
+
+---
+
+## 🖥️ Step 2 — Connect to Azure VM
 
 ```bash
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+ssh -i yourkey.pem azureuser@<vm-public-ip>
 ```
 
-### Login to Azure
+### Install Required Packages
+
+```bash
+sudo apt update -y
+sudo apt install docker.io git -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+Verify Docker:
+
+```bash
+docker --version
+```
+
+---
+
+## 🧰 Step 3 — Install Azure CLI (Required)
+
+```bash
+sudo apt-get update
+sudo apt-get install azure-cli -y
+```
+
+Verify:
+
+```bash
+az version
+```
+
+Login:
 
 ```bash
 az login
 ```
 
----
+(Optional – if multiple subscriptions)
 
-## 📁 Repository Structure
-
-```
-aks-create-cluster/
-├── README.md
-├── scripts/
-│   ├── 01-resource-group.sh
-│   ├── 02-aks-create.sh
-│   └── 03-get-credentials.sh
-└── docs/
-    └── architecture.md
+```bash
+az account set --subscription <SUBSCRIPTION_ID>
 ```
 
 ---
 
-## 🚀 Step-by-Step AKS Cluster Creation
+## 🔑 Step 4 — Login to ACR (Required)
 
-### 1️⃣ Create Resource Group
+### Get Credentials
+
+Azure Portal → **ACR → Access keys**
+
+Required values:
+
+* **Login server:** `atulkamble.azurecr.io`
+* **Username**
+* **Password**
+
+### Docker Login
+
+```bash
+sudo docker login atulkamble.azurecr.io
+```
+
+✔ Required to push images
+✔ Only needed on build machine
+
+---
+
+## 📦 Step 5 — Clone Docker Project
+
+```bash
+git clone https://github.com/atulkamble/docker-hello-world.git
+cd docker-hello-world
+```
+
+Verify Dockerfile exists:
+
+```bash
+ls
+```
+
+---
+
+## 🧱 Step 6 — Build & Tag Docker Image (Required Format)
+
+### Required Image Naming Convention (ACR)
+
+```
+<registry-name>.azurecr.io/<repository>/<image>:<tag>
+```
+
+### Build Image
+
+```bash
+sudo docker build -t atulkamble.azurecr.io/cloudnautic/hello-world:latest .
+```
+
+Verify:
+
+```bash
+sudo docker images
+```
+
+---
+
+## ☁️ Step 7 — Push Image to ACR (Required)
+
+```bash
+sudo docker push atulkamble.azurecr.io/cloudnautic/hello-world:latest
+```
+
+✔ Image uploaded to Azure
+✔ Ready for AKS consumption
+
+---
+
+## ✅ Step 8 — Verify in Azure Portal
+
+Navigate to:
+
+**Azure Portal → Container Registry → Repositories**
+
+You should see:
+
+```
+cloudnautic/hello-world
+```
+
+With tag:
+
+```
+latest
+```
+
+---
+
+## 🧾 ACR Summary (Required Fields Recap)
+
+| Step                      | Required |
+| ------------------------- | -------- |
+| ACR created               | ✅        |
+| Registry name unique      | ✅        |
+| Docker login to ACR       | ✅        |
+| Image tagged with ACR URL | ✅        |
+| Image pushed successfully | ✅        |
+
+---
+
+# ☁️ AKS + ACR Deployment Guide
+
+**(With Required Fields & Correct Order)**
+
+---
+
+## 🔧 1. Create Resource Group (Required)
 
 ```bash
 az group create \
-  --name aks \
+  --name devops \
   --location eastus
 ```
 
 ---
 
-### 2️⃣ Create AKS Cluster
+## 🚀 2. Create AKS Cluster (Required Fields)
+
+### Minimum Required (Lab)
 
 ```bash
 az aks create \
-  --resource-group aks \
+  --resource-group devops \
   --name mycluster \
-  --node-count 2 \
-  --node-vm-size Standard_DS2_v2 \
+  --node-count 1 \
   --enable-managed-identity \
   --generate-ssh-keys
 ```
 
-⏱️ **Provisioning Time:** ~5–10 minutes
+### Recommended (Production-Aligned)
+
+```bash
+az aks create \
+  --resource-group devops \
+  --name mycluster \
+  --node-count 1 \
+  --node-vm-size Standard_DS2_v2 \
+  --enable-managed-identity \
+  --enable-addons monitoring \
+  --ssh-access disabled \
+  --generate-ssh-keys
+```
 
 ---
 
-### 3️⃣ Get AKS Credentials
+## ⚙️ 3. Install kubectl (Required)
+
+```bash
+sudo snap install kubectl --classic
+```
+
+Verify:
+
+```bash
+kubectl version --client
+```
+
+---
+
+## 🔗 4. Connect to AKS (Required)
 
 ```bash
 az aks get-credentials \
-  --resource-group aks \
-  --name mycluster
+  --resource-group devops \
+  --name mycluster \
+  --overwrite-existing
 ```
 
 Verify:
@@ -168,197 +289,117 @@ kubectl get nodes
 
 ---
 
-## ✅ Validation & Testing
+## 🧩 5. Attach ACR to AKS (Required for Private Images)
 
 ```bash
-kubectl cluster-info
-kubectl get nodes -o wide
-kubectl get pods -A
+az aks update \
+  --resource-group devops \
+  --name mycluster \
+  --attach-acr atulkamble
 ```
 
-Expected Output:
-
-* Nodes in **Ready** state
-* System pods running in `kube-system`
+✔ Eliminates Docker login inside pods
+✔ Uses Managed Identity
 
 ---
 
-## 🔐 Security Best Practices
-
-* Use **Managed Identity** (enabled by default)
-* Integrate **Azure AD** for RBAC
-* Restrict API server access
-* Use **Network Policies**
-* Enable **Azure Monitor & Defender for AKS**
-
----
-
-## 📈 Production Enhancements (Optional)
-
-* 🔹 Enable Auto Scaling
-* 🔹 Add User Node Pools
-* 🔹 Attach Azure Container Registry (ACR)
-* 🔹 Enable Azure Monitor
-* 🔹 Configure Ingress Controller (NGINX)
-
----
-
-## 🔍 What is happening?
-
-You ran:
+## 🗂️ 6. Create Namespace (Required for Isolation)
 
 ```bash
-az aks create \
-  --resource-group aks-rg \
-  --name aks-demo-cluster \
-  --node-count 2 \
-  --node-vm-size Standard_DS2_v2 \
-  --enable-managed-identity \
-  --generate-ssh-keys
+kubectl create namespace cloudnautic
 ```
-
-Azure CLI responded with:
-
-> *The behavior of this command has been altered by the following extension: aks-preview*
-> *The new node pool will enable SSH access, recommended to use '--ssh-access disabled' option to disable SSH access for the node pool to make it more secure.*
-
-### ✅ Meaning
-
-* You have **`aks-preview` extension installed**
-* AKS **node pool SSH access is enabled by default**
-* Azure **recommends disabling SSH** for better security (production best practice)
 
 ---
 
-## 🔐 Recommended (Secure) Command – Disable SSH Access
+## 📦 7. Deploy App from ACR (Required Fields)
 
-### ✅ **Production-Ready AKS Create Command**
+### deployment.yaml (Required Fields Highlighted)
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-web
+  namespace: cloudnautic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-web
+  template:
+    metadata:
+      labels:
+        app: hello-web
+    spec:
+      containers:
+      - name: hello-web
+        image: atulkamble.azurecr.io/cloudnautic/hello-world:latest
+        ports:
+        - containerPort: 80
+```
+
+### service.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-web-svc
+  namespace: cloudnautic
+spec:
+  type: LoadBalancer
+  selector:
+    app: hello-web
+  ports:
+  - port: 80
+    targetPort: 80
+```
+
+Apply:
 
 ```bash
-az aks create \
-  --resource-group aks-rg \
-  --name aks-demo-cluster \
-  --node-count 2 \
-  --node-vm-size Standard_DS2_v2 \
-  --enable-managed-identity \
-  --ssh-access disabled \
-  --generate-ssh-keys
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
 ```
 
-✔ SSH disabled on worker nodes
-✔ Access only via `kubectl`
-✔ Aligns with **Zero Trust & Enterprise Security**
-
 ---
 
-## 🧠 When SHOULD SSH be enabled?
-
-| Scenario                | SSH Needed?  |
-| ----------------------- | ------------ |
-| Production cluster      | ❌ No         |
-| Dev / Training labs     | ⚠️ Optional  |
-| Node-level debugging    | ⚠️ Temporary |
-| Compliance environments | ❌ No         |
-
-👉 **Best practice**: Keep SSH disabled and use:
-
-* `kubectl exec`
-* `kubectl logs`
-* Azure Monitor / Container Insights
-
----
-
-## 🔎 Check if `aks-preview` Extension is Installed
+## ✅ 8. Verify Deployment
 
 ```bash
-az extension list --output table
+kubectl get pods -n cloudnautic
+kubectl get svc -n cloudnautic
 ```
 
-If you see:
+Access:
 
 ```
-aks-preview
+http://<EXTERNAL-IP>
 ```
-
-That explains the behavior change.
 
 ---
 
-## 🧹 Optional: Remove aks-preview (If Not Needed)
-
-> ⚠️ Remove only if you are not using preview AKS features
-
-```bash
-az extension remove --name aks-preview
-```
-
-Then re-run the normal command.
-
----
-
-## 🛡️ Enterprise AKS Security Recommendations
-
-* ✅ Disable SSH access
-* ✅ Use Managed Identity
-* ✅ Enable Azure AD + RBAC
-* ✅ Restrict API server IP ranges
-* ✅ Enable Defender for Containers
-* ✅ Use Private AKS (for production)
-
----
-
-## 🧹 Cleanup (Avoid Extra Costs)
+## 🧹 9. Cleanup (Required to Avoid Cost)
 
 ```bash
 az group delete \
-  --name aks-rg \
+  --name devops \
   --yes --no-wait
 ```
 
 ---
 
-## 📚 Useful Commands Cheat Sheet
+## 🎤 Interview One-Liner
 
-```bash
-kubectl get nodes
-kubectl get svc
-kubectl get deployments
-kubectl describe node <node-name>
-```
+> “I created a private Azure Container Registry, pushed Docker images using proper ACR tagging, attached ACR to AKS via managed identity, and deployed workloads securely without exposing registry credentials.”
 
 ---
 
-## 🎯 Use Cases
+If you want next:
 
-* DevOps CI/CD Pipelines
-* Microservices Deployment
-* Kubernetes Training & Labs
-* Cloud-Native Application Hosting
+* 🔹 **ACR + AKS using Terraform**
+* 🔹 **ACR private endpoint**
+* 🔹 **Image pull failure troubleshooting**
+* 🔹 **Production ACR security checklist**
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repo
-2. Create a feature branch
-3. Commit changes
-4. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**.
-
----
-
-## 👨‍💻 Author
-
-**Atul Kamble**
-Cloud & DevOps Architect | Trainer | Founder
-
-🔗 GitHub: [https://github.com/atulkamble](https://github.com/atulkamble)
-
----
+Just say 👍
