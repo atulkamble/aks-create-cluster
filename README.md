@@ -269,7 +269,10 @@ Verify:
 ```bash
 kubectl version --client
 ```
-
+## Install kubectl on Windows 
+```
+choco install kubernetes-cli -y
+```
 ---
 
 ## 🔗 4. Connect to AKS (Required)
