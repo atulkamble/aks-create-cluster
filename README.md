@@ -249,7 +249,7 @@ az aks create \
   --resource-group devops \
   --name mycluster \
   --node-count 1 \
-  --node-vm-size Standard_DS2_v2 \
+  --node-vm-size Standard_D2s_v4 \
   --enable-managed-identity \
   --enable-addons monitoring \
   --ssh-access disabled \
